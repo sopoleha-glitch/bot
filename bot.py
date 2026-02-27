@@ -21,16 +21,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     user_name = user.first_name or "друг"
     
-    if user_name.lower() == "матвей":
-        await update.message.reply_text(
-            "🚀 Матвей гей, рад тебя видеть! 😄\nЯ бот на DeepSeek, задавай вопросы!",
-            reply_markup=main_keyboard
-        )
-    else:
-        await update.message.reply_text(
-            f"🚀 Привет, {user_name}!\nЯ бот на DeepSeek! Просто пиши мне о чем угодно.",
-            reply_markup=main_keyboard
-        )
+    await update.message.reply_text(
+        f"🚀 {user_name} гей, рад тебя видеть! 😄\nЯ бот на DeepSeek, задавай вопросы!",
+        reply_markup=main_keyboard
+    )
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("/start - Запуск\n/help - Помощь")
