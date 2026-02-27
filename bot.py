@@ -1,6 +1,7 @@
+```python
 import logging
 import requests
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from openai import OpenAI
 
@@ -14,15 +15,23 @@ client = OpenAI(
     base_url="https://api.deepseek.com"
 )
 
-main_keyboard = [['💰 Баланс', '❓ Помощь']]
-main_markup = ReplyKeyboardMarkup(main_keyboard, resize_keyboard=True)
+start_button = KeyboardButton("🚀 СТАРТ")
+main_keyboard = ReplyKeyboardMarkup([[start_button], ['💰 Баланс', '❓ Помощь']], resize_keyboard=True)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    await update.message.reply_text(
-        f"🚀 Привет, {user.first_name}!\nЯ бот на DeepSeek! Просто пиши мне о чем угодно.",
-        reply_markup=main_markup
-    )
+    user_name = user.first_name or "друг"
+    
+    if user_name.lower() == "матвей":
+        await update.message.reply_text(
+            f"🚀 Матвей гей, рад тебя видеть! 😄\nЯ бот на DeepSeek, задавай вопросы!",
+            reply_markup=main_keyboard
+        )
+    else:
+        await update.message.reply_text(
+            f"🚀 Привет, {user_name}!\nЯ бот на DeepSeek! Просто пиши мне о чем угодно.",
+            reply_markup=main_keyboard
+        )
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("/start - Запуск\n/help - Помощь")
@@ -32,6 +41,10 @@ async def balance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
+    
+    if text == '🚀 СТАРТ':
+        await start(update, context)
+        return
     
     if text == '💰 Баланс':
         await balance_command(update, context)
@@ -63,3 +76,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+```
