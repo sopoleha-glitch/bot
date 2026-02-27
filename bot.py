@@ -1,4 +1,3 @@
-```python
 import logging
 import requests
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
@@ -16,7 +15,7 @@ client = OpenAI(
 )
 
 start_button = KeyboardButton("🚀 СТАРТ")
-main_keyboard = ReplyKeyboardMarkup([[start_button], ['💰 Баланс', '❓ Помощь']], resize_keyboard=True)
+main_keyboard = ReplyKeyboardMarkup([[start_button], ["💰 Баланс", "❓ Помощь"]], resize_keyboard=True)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -24,7 +23,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if user_name.lower() == "матвей":
         await update.message.reply_text(
-            f"🚀 Матвей гей, рад тебя видеть! 😄\nЯ бот на DeepSeek, задавай вопросы!",
+            "🚀 Матвей гей, рад тебя видеть! 😄\nЯ бот на DeepSeek, задавай вопросы!",
             reply_markup=main_keyboard
         )
     else:
@@ -42,15 +41,15 @@ async def balance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     
-    if text == '🚀 СТАРТ':
+    if text == "🚀 СТАРТ":
         await start(update, context)
         return
     
-    if text == '💰 Баланс':
+    if text == "💰 Баланс":
         await balance_command(update, context)
         return
     
-    if text == '❓ Помощь':
+    if text == "❓ Помощь":
         await help_command(update, context)
         return
     
@@ -74,6 +73,5 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.run_polling()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-```
