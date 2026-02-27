@@ -1,3 +1,4 @@
+```python
 import logging
 import requests
 import io
@@ -23,7 +24,6 @@ client = OpenAI(
     base_url="https://api.deepseek.com"
 )
 
-# Клавиатура с кнопками
 start_button = KeyboardButton("🚀 СТАРТ")
 files_button = KeyboardButton("📁 Анализ файла")
 translate_button = KeyboardButton("🌐 Переводчик")
@@ -40,7 +40,6 @@ main_keyboard = ReplyKeyboardMarkup([
     [balance_button, help_button]
 ], resize_keyboard=True)
 
-# Словарь для игр
 games = {
     'cities': {
         'name': '🌆 Города',
@@ -89,7 +88,6 @@ async def clear_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def balance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("💰 Баланс есть, всё ок!")
 
-# 1. АНАЛИЗ ФАЙЛОВ
 async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📥 Получил файл, анализирую...")
     
@@ -100,12 +98,10 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
             file_name = update.message.document.file_name
             file_ext = file_name.split('.')[-1].lower()
             
-            # Скачиваем файл
             with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as tmp_file:
                 await file.download_to_drive(tmp_file.name)
                 tmp_path = tmp_file.name
             
-            # Читаем в зависимости от типа
             text = ""
             if file_ext == 'pdf':
                 with open(tmp_path, 'rb') as f:
@@ -125,11 +121,9 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 with open(tmp_path, 'r', encoding='utf-8') as f:
                     text = f.read()
             
-            # Ограничиваем длину
             if len(text) > 10000:
                 text = text[:10000] + "..."
             
-            # Отправляем DeepSeek для анализа
             response = client.chat.completions.create(
                 model="deepseek-chat",
                 messages=[
@@ -141,13 +135,11 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             await update.message.reply_text(f"📊 Анализ файла:\n\n{response.choices[0].message.content}")
             
-            # Удаляем временный файл
             os.unlink(tmp_path)
             
     except Exception as e:
         await update.message.reply_text(f"Ошибка при анализе файла: {e}")
 
-# 2. ПЕРЕВОДЧИК 2.0
 async def translate_text(text, target_language="английский", style="обычный"):
     style_prompt = {
         "деловой": "Переведи в официально-деловом стиле",
@@ -168,7 +160,6 @@ async def translate_text(text, target_language="английский", style="о
     )
     return response.choices[0].message.content
 
-# 3. РЕПЕТИТОР
 async def explain_topic(topic, level="начинающий"):
     system_prompt = f"Ты лучший репетитор. Объясни тему '{topic}' для уровня '{level}'. Используй примеры из жизни. Будь терпелив и дружелюбен."
     
@@ -182,23 +173,19 @@ async def explain_topic(topic, level="начинающий"):
     )
     return response.choices[0].message.content
 
-# 4. РАСПОЗНАВАНИЕ ГОЛОСА
 async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🎤 Получил голосовое, распознаю...")
     
     try:
-        # Скачиваем голосовое
         voice_file = await update.message.voice.get_file()
         
         with tempfile.NamedTemporaryFile(delete=False, suffix=".ogg") as tmp_file:
             await voice_file.download_to_drive(tmp_file.name)
             tmp_path = tmp_file.name
         
-        # Конвертируем в WAV (нужен ffmpeg на сервере)
         wav_path = tmp_path.replace('.ogg', '.wav')
         os.system(f"ffmpeg -i {tmp_path} {wav_path}")
         
-        # Распознаем речь
         recognizer = sr.Recognizer()
         with sr.AudioFile(wav_path) as source:
             audio = recognizer.record(source)
@@ -206,14 +193,12 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         await update.message.reply_text(f"📝 Распознал: {text}")
         
-        # Отправляем DeepSeek для ответа
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[{"role": "user", "content": text}],
             max_tokens=1000
         )
         
-        # Озвучиваем ответ
         tts = gTTS(text=response.choices[0].message.content, lang='ru')
         audio_bytes = io.BytesIO()
         tts.write_to_fp(audio_bytes)
@@ -221,14 +206,12 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         await update.message.reply_voice(voice=audio_bytes)
         
-        # Удаляем временные файлы
         os.unlink(tmp_path)
         os.unlink(wav_path)
         
     except Exception as e:
         await update.message.reply_text(f"Ошибка при распознавании: {e}")
 
-# 5. ИГРЫ
 async def play_game(update: Update, context: ContextTypes.DEFAULT_TYPE, game_name):
     if game_name == "города":
         context.user_data['game'] = 'cities'
@@ -262,11 +245,9 @@ async def handle_game_move(update: Update, context: ContextTypes.DEFAULT_TYPE, t
         next_city = random.choice(games['cities']['russian_cities'])
         await update.message.reply_text(f"✅ Принято! Мой город: {next_city.capitalize()}")
 
-# ОСНОВНОЙ ОБРАБОТЧИК
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     
-    # Обработка кнопок
     if text == "🚀 СТАРТ":
         await start(update, context)
         return
@@ -309,12 +290,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await help_command(update, context)
         return
     
-    # Обработка игр
     if context.user_data.get('game'):
         await handle_game_move(update, context, text)
         return
     
-    # Обработка режимов
     mode = context.user_data.get('mode', 'chat')
     
     if mode == 'translator':
@@ -342,10 +321,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if mode == 'tutor':
         explanation = await explain_topic(text)
         await update.message.reply_text(f"📚 Объяснение:\n\n{explanation}")
-        context.user_data['mode'] = 'chat'  # Возвращаем в обычный режим
+        context.user_data['mode'] = 'chat'
         return
     
-    # Обычный чат с DeepSeek
     await update.message.chat.send_action(action="typing")
     
     if 'history' not in context.user_data:
@@ -376,19 +354,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     app = Application.builder().token(TELEGRAM_TOKEN).build()
     
-    # Обработчики команд
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("clear", clear_command))
     
-    # Обработчики файлов и голоса
     app.add_handler(MessageHandler(filters.Document.ALL, handle_file))
     app.add_handler(MessageHandler(filters.VOICE, handle_voice))
     
-    # Обработчик текста
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     app.run_polling()
 
 if __name__ == "__main__":
     main()
+```
